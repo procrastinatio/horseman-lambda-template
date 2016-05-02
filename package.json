@@ -15,10 +15,10 @@
   "homepage": "https://github.com/rebelmail/node-lambda-template",
   "dependencies": {
      "node-horseman": "^3.0.1",
-     "phantomjs": "^1.9.17",
-      "aws-sdk": "^2.1.39"
+     "phantomjs": "^1.9.17"
   },
   "devDependencies": {
+      "aws-sdk": "^2.1.39",
     "node-lambda": "^0.8.1",
     "mocha": "^2.3.2"
   },

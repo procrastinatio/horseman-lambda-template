@@ -17,6 +17,9 @@ var fs = require('fs'), path = require('path'), zlib = require('zlib');
 var upload = function(options, callback){
     var AWS = require('aws-sdk');
 
+    // config the sdk with our credentials
+    //   // http://docs.aws.amazon.com/AWSJavaScriptSDK/guide/node-configuring.html
+    AWS.config.loadFromPath('./config.json');
 
     var body = fs.createReadStream( options.filename);
 
@@ -25,7 +28,7 @@ var upload = function(options, callback){
     var s3 = new AWS.S3();
    var s3obj = new AWS.S3({
     params: {
-        Bucket: 'abcd-config',
+        Bucket: 'dummy-lambda-test',
         Key: path.basename(options.filename),
          ACL: 'public-read',
         ContentType: 'image/jpeg',
@@ -90,13 +93,13 @@ exports.handler = function( event, context, callback ) {
 
              var horseman = new Horseman({phantomPath: phantomJsPath, timeout: 10000});
              var title = horseman
-                 //.userAgent('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36')
-                 .headers({'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36',
-                           'Referer': 'https://map.geo.admin.ch',
-                           'Accept': 'image/webp,image/*,*/*;q=0.8',
-                           'Accept-Language': 'fr-FR,fr;q=0.8,en-US;q=0.6,en;q=0.4',
-                           'Connection': 'keep-alive',
-                           'Accept-Encoding': 'gzip, deflate, sdch'})
+                 .userAgent('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36')
+                 //.headers({'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36',
+                 //          'Referer': 'https://map.geo.admin.ch',
+                 //          'Accept': 'image/webp,image/*,*/*;q=0.8',
+                 //          'Accept-Language': 'fr-FR,fr;q=0.8,en-US;q=0.6,en;q=0.4',
+                 //          'Connection': 'keep-alive',
+                 //          'Accept-Encoding': 'gzip, deflate, sdch'})
                  .viewport(w,h)
                  .open(url)
                  .status()

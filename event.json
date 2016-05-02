@@ -1,8 +1,5 @@
 {
-  "key": "value",
-  "key2": "value2",
-  "other_key": "other_value",
   "size": [1600, 1200],
   "wait": 8000,
-  "url": "https://map.geo.admin.ch/mobile.html?lang=de&topic=schneesport&bgLayer=voidLayer&layers=ch.swisstopo.pixelkarte-farbe-pk50.noscale,ch.swisstopo.hangneigung-ueber_30,ch.swisstopo-karto.hangneigung,ch.bafu.wrz-jagdbanngebiete_select,ch.bafu.wrz-wildruhezonen_portal,ch.bazl.heliports-gebirgslandeplaetze,ch.swisstopo-karto.schneeschuhrouten,ch.swisstopo-karto.skitouren,ch.swisstopo.skitourenkarte-50.metadata,ch.bav.haltestellen-oev,KML%7C%7Chttp:%2F%2Fwww.procrastinatio.org%2Fkml%2Fbln-style.kml,WMS%7C%7CKoordinatennetz%20CH1903%2FLV03%7C%7Chttps:%2F%2Fwms.geo.admin.ch%2F%7C%7Corg.epsg.grid_21781%7C%7C1.3.0&layers_visibility=true,false,true,true,true,false,true,true,false,false,true,true&layers_opacity=0.85,0.5,0.2,0.6,0.6,1,0.8,0.8,1,1,1,1&catalogNodes=2352&X=169607.50&Y=820645.00&zoom=7&mobile=true"
+  "url": "https://www.procrastinatio.org"
 }

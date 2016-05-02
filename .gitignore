@@ -1,3 +1,4 @@
 node_modules
 context.json
+config.json
 .env
