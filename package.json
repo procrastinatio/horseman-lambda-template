@@ -1,11 +1,11 @@
 {
-  "name": "phantom-lambda-template",
-  "version": "0.0.2",
+  "name": "horseman-lambda-template",
+  "version": "0.0.1",
   "description": "The bare minimum for a phantomjs app running on Amazon Lambda.",
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git://github.com/rebelmail/node-lambda-template.git"
+    "url": "git://github.com/procrastinatio/horseman-lambda-template.git"
   },
   "author": "motdotla",
   "license": "isc",
@@ -13,11 +13,13 @@
     "url": "https://github.com/rebelmail/node-lambda-template/issues"
   },
   "homepage": "https://github.com/rebelmail/node-lambda-template",
-  "dependencies": {},
+  "dependencies": {
+     "node-horseman": "^3.0.1",
+     "phantomjs": "^1.9.17",
+      "aws-sdk": "^2.1.39"
+  },
   "devDependencies": {
-    "aws-sdk": "^2.1.39",
-    "node-lambda": "^0.6.1",
-    "phantomjs": "^1.9.17",
+    "node-lambda": "^0.8.1",
     "mocha": "^2.3.2"
   },
   "scripts": {

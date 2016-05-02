@@ -1,66 +1,141 @@
+
+/*
+(function() {
+    var childProcess = require("child_process");
+    var oldSpawn = childProcess.spawn;
+    function mySpawn() {
+        console.log('spawn called');
+        console.log(arguments);
+        var result = oldSpawn.apply(this, arguments);
+        return result;
+    }
+    childProcess.spawn = mySpawn;
+})();
+*/
+var fs = require('fs'), path = require('path'), zlib = require('zlib');
+
+var upload = function(options, callback){
+    var AWS = require('aws-sdk');
+
+
+    var body = fs.createReadStream( options.filename);
+
+    var ret = null;
+
+    var s3 = new AWS.S3();
+   var s3obj = new AWS.S3({
+    params: {
+        Bucket: 'abcd-config',
+        Key: path.basename(options.filename),
+         ACL: 'public-read',
+        ContentType: 'image/jpeg',
+        Body: 'Hello'
+    }
+});
+s3obj.upload({
+    Body: body
+}).
+on('httpUploadProgress', function(evt) {
+    console.log(evt);
+}).
+send(function(err, data) {
+    if (err) {
+        callback(err);
+    } else {
+
+      console.log(data);
+      callback(null, data);
+    }
+});
+
+
+};
+
 // Entry Point
-exports.handler = function( event, context ) {
+exports.handler = function( event, context, callback ) {
   "use strict";
 
   var path = require('path'),
       fs = require('fs'),
       http = require('http'),
-      phantomDownloadPath = "https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-1.9.8-linux-x86_64-symbols.tar.bz2",
-      childProcess = require('child_process');
+      crypto = require('crypto');
 
-  // Get the path to the phantomjs application
-  function getPhantomFileName(callback) {
-    var nodeModulesPath = path.join(__dirname, 'node_modules');
-    fs.exists(nodeModulesPath, function(exists) {
-      if (exists) {
-        callback(path.join(__dirname, 'node_modules','phantomjs', 'bin', 'phantomjs'));
+    console.log(event);
+    var url = event.url;
+    var s = event.size;
+    var w = s[0], h = s[1];
+
+    var Horseman = require('node-horseman');
+   
+
+    // Get the path to the phantomjs application
+    function getPhantomFileName(callback) {
+        console.log('getPhantomFileName');
+        var nodeModulesPath = path.join(__dirname, 'node_modules');
+        fs.exists(nodeModulesPath, function(exists) {
+            if (exists) {
+                callback(path.join(__dirname, 'node_modules','phantomjs', 'bin', 'phantomjs'));
+            }
+            else {
+                callback(path.join(__dirname, 'phantomjs'));
+            }
+        });
+     }
+
+     // Call the phantomjs script
+     function callPhantom(event, context, callback) {
+         console.log('callPhantom');
+         getPhantomFileName(function(phantomJsPath) {
+             console.log('Calling phantom: ', phantomJsPath);
+
+             var horseman = new Horseman({phantomPath: phantomJsPath, timeout: 10000});
+             var title = horseman
+                 //.userAgent('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36')
+                 .headers({'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36',
+                           'Referer': 'https://map.geo.admin.ch',
+                           'Accept': 'image/webp,image/*,*/*;q=0.8',
+                           'Accept-Language': 'fr-FR,fr;q=0.8,en-US;q=0.6,en;q=0.4',
+                           'Connection': 'keep-alive',
+                           'Accept-Encoding': 'gzip, deflate, sdch'})
+                 .viewport(w,h)
+                 .open(url)
+                 .status()
+    .then(function (statusCode) {
+      console.log('HTTP status code: ', statusCode);
+      if (Number(statusCode) >= 400) {
+        throw 'Page failed with status: ' + statusCode;
       }
-      else {
-        callback(path.join(__dirname, 'phantomjs'));
-      }
-    });
-  }
-
-  // Call the phantomjs script
-  function callPhantom(callback) {
-    getPhantomFileName(function(phantomJsPath) {
+    })
+                 .wait(event.wait)
+                 .screenshotBase64('JPEG')
+                 .then(function (screenshotBase64) {
+                     // Name the file based on a sha1 hash of the url
+                      var urlSha1 = crypto.createHash('sha1').update(url).digest('hex')
+                         , filePath = '/tmp/' + urlSha1  +'.jpeg';
+                             
+                     //var filePath = '/tmp/toto.jpeg';
+                     var binaryData = new Buffer(screenshotBase64, 'base64').toString('binary');
+                     
       
-      var childArgs = [
-        path.join(__dirname, 'phantomjs-script.js')
-      ];
-  
-      // This option causes the shared library loader to output
-      // useful information if phantomjs can't start.
-      process.env['LD_WARN'] = 'true';
+                     fs.writeFile(filePath, screenshotBase64, 'base64', function(err){
+                         if (err) {
+                             callback(err);
+                          }
+                          console.log('Success! You should now have a new screenshot at: ', filePath);
+                          //callback(null, filePath);
+                          upload({filename: filePath}, callback);
+                      }); 
+                  })
+                 .catch(function (err) {
+                      console.log('Error taking screenshot: ', err);
+                      callback(err);
+                  })
+                 .close();
+         });
+         //listBuckets({}, callback);
+     } 
 
-      // Tell the loader to look in this script's directory for
-      // the shared libraries that Phantom.js 2.0.0 needs directly.
-      // This shouldn't be necessary once
-      // https://github.com/ariya/phantomjs/issues/12948
-      // is fixed.
-      process.env['LD_LIBRARY_PATH'] = __dirname;
-
-      console.log('Calling phantom: ', phantomJsPath, childArgs);
-      var ls = childProcess.execFile(phantomJsPath, childArgs);
-  
-      ls.stdout.on('data', function (data) {    // register one or more handlers
-        console.log(data);
-      });
-  
-      ls.stderr.on('data', function (data) {
-        console.log('phantom error  ---:> ' + data);
-      });
-  
-      ls.on('exit', function (code) {
-        console.log('child process exited with code ' + code);
-        callback();
-      });
-      
-    });
-  }
-
-  // Execute the phantom call and exit
-  callPhantom(function() {
-    context.done();
-  });
+    // Execute the phantom call and exit
+    console.log('calling phantomjs');
+    callPhantom(event, context, callback); 
 }
